@@ -1,0 +1,26 @@
+import { Module } from '@nestjs/common';
+import { ProfileService } from './profile.service';
+import { ProfileController } from './profile.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Profile } from './entities/profile.entity';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([Profile]),
+    ClientsModule.register([
+      {
+        name: 'AUTH_MICROSERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://localhost'],
+          queue: 'auth_queue',
+          queueOptions: {durable: false},
+        }
+      }
+    ]),
+  ],
+  controllers: [ProfileController],
+  providers: [ProfileService]
+})
+export class ProfileModule {}
